@@ -1,6 +1,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
+#include <ctype.h>
 #include <time.h>
 #include <Windows.h>
 
@@ -113,13 +115,22 @@ recall(double* network, int* pattern) {
 		sequence[i] = i;
 	}
 	int step = 0;
+	bool exit = false;
 	do	{
 		recall_step(network, pattern, sequence, step);
 		step++;
-		if (step == PATTERN_SIZE)
-			step = 0;
-		Sleep(100);
-	} while (1==1);
+		if (step == PATTERN_SIZE) {
+			step = 0; //causes the next recall step to shuffle the order once more.
+			char option;
+			printf("\n Enter Q to quit or anything else to continue.");
+			Sleep(500);
+			scanf("%c", &option);
+			option = toupper(option);
+			if (option == 'Q')
+				exit = true;
+		}
+		Sleep(100); 
+	} while (exit == false);
 }
 
 int main(void) {
@@ -135,6 +146,33 @@ int main(void) {
 						1, 0, 0, 0, 1,
 						1, 0, 0, 0, 1 };
 
+	//array pattern for the letter s
+	int s_pattern[] = { 1, 1, 1, 1, 1,
+						1, 0, 0, 0, 0,
+						0, 1, 0, 0, 0,
+						0, 0, 1, 0, 0,
+						0, 0, 0, 1, 0,
+						0, 0, 0, 0, 1,
+						1, 1, 1, 1, 1 };
+
+	//array pattern for the letter t
+	int t_pattern[] = { 1, 1, 1, 1, 1,
+						0, 0, 1, 0, 0,
+						0, 0, 1, 0, 0,
+						0, 0, 1, 0, 0,
+						0, 0, 1, 0, 0,
+						0, 0, 1, 0, 0,
+						0, 0, 1, 0, 0 };
+
+	//array pattern for the letter u
+	int u_pattern[] = { 1, 0, 0, 0, 1,
+						1, 0, 0, 0, 1,
+						1, 0, 0, 0, 1,
+						1, 0, 0, 0, 1,
+						1, 0, 0, 0, 1,
+						1, 0, 0, 0, 1,
+						1, 1, 1, 1, 1 };
+
 	//create a blank network
 	double weighted_network[NETWORK_SIZE];
 	for (int i = 0; i < NETWORK_SIZE; i++) {
@@ -142,13 +180,49 @@ int main(void) {
 	}
 
 	train_network(weighted_network, a_pattern);
+	train_network(weighted_network, s_pattern);
+	train_network(weighted_network, t_pattern);
+	train_network(weighted_network, u_pattern);
 	int cue[PATTERN_SIZE]; 
-	
-	generate_cue(a_pattern, cue, 15);
-	negative_image(cue);
-	draw_pattern(cue);
 
-	recall(weighted_network, cue);
+	bool exit = false;
+	do {
+		bool generated = false;
+		char option;
+		int noise;
+		printf("Enter a character: A, S, T, U to recall that letter, Q to quit. \n");
+		scanf("%c", &option);
+		option = toupper(option);
+		if (option != 'Q') {
+			printf("Please enter a value from 0-100 for noise. \n");
+			scanf("%d", &noise);
+		}
+		switch (option) {
+		case 'A':
+			generate_cue(a_pattern, cue, noise);
+			generated = true;
+			break;
+		case 'S':
+			generate_cue(s_pattern, cue, noise);
+			generated = true;
+			break;
+		case 'T':
+			generate_cue(t_pattern, cue, noise);
+			generated = true;
+			break;
+		case 'U':
+			generate_cue(u_pattern, cue, noise);
+			generated = true;
+			break;
+		case 'Q':
+			exit = true;
+		}
+		if (generated) {
+			negative_image(cue);
+			draw_pattern(cue);
+			recall(weighted_network, cue);
+		}
+	} while (exit == false);
 
 	return 0;
 }
