@@ -240,3 +240,9 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+/Prototype/Prototype/Parallel.cu
+/Prototype/Prototype/Parallel.h
+/Prototype/Prototype/prototype_header.h
+/Prototype2/Prototype2/Prototype.c
+/Prototype2/Prototype2/Parallel.h
+/Prototype2/Prototype2/PrototypeHeader.h

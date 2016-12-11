@@ -1,10 +1,9 @@
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <ctype.h>
 #include <time.h>
-#include <Windows.h>
+#include "prototype_header.h"
+#include "Parallel.h"
 
 #define IMAGE_WIDTH		5
 #define IMAGE_HEIGHT	7
@@ -188,8 +187,13 @@ int main(void) {
 	bool exit = false;
 	do {
 		bool generated = false;
+
+		char gpu;
 		char option;
 		int noise;
+		printf("Enter G to use the GPU instead");
+		scanf("%c", &gpu);
+		gpu = toupper(gpu);
 		printf("Enter a character: A, S, T, U to recall that letter, Q to quit. \n");
 		scanf("%c", &option);
 		option = toupper(option);
@@ -220,7 +224,10 @@ int main(void) {
 		if (generated) {
 			negative_image(cue);
 			draw_pattern(cue);
-			recall(weighted_network, cue);
+			if (gpu == 'G')
+				parallel_recall(weighted_network, cue);
+			else
+				recall(weighted_network, cue);
 		}
 	} while (exit == false);
 
