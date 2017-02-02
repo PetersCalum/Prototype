@@ -1,4 +1,4 @@
-#include <stdio.h>
+	#include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -51,7 +51,6 @@ parallel_recall_step(double* network, int* pattern) {
 		__syncthreads();
 	}
 
-
 	if (thread_id == 0) {
 		//0th element stores the final sum
 		if (summed_data[thread_id] > 0)
@@ -72,12 +71,12 @@ parallel_recall(double* network, int* pattern) {
 		double* device_network;
 		int* device_pattern;
 		//allocate the device memory for the variables.
-		cudaMalloc((void **)&device_network, sizeof(network));
-		cudaMalloc((void **)&device_pattern, sizeof(pattern));
+		cudaMalloc((void **)&device_network, sizeof(double)*NETWORK_SIZE);
+		cudaMalloc((void **)&device_pattern, sizeof(int)*PATTERN_SIZE);
 
 		//copy the data over
-		cudaMemcpy(device_network, network, sizeof(device_network), cudaMemcpyHostToDevice);
-		cudaMemcpy(device_pattern, pattern, sizeof(device_pattern), cudaMemcpyHostToDevice);
+		cudaMemcpy(device_network, network, sizeof(double)*NETWORK_SIZE, cudaMemcpyHostToDevice);
+		cudaMemcpy(device_pattern, pattern, sizeof(int)*PATTERN_SIZE, cudaMemcpyHostToDevice);
 
 		//launch kernel on the GPU
 		parallel_recall_step<<<PATTERN_SIZE, PATTERN_SIZE>>>(device_network, device_pattern); //run with as many blocks as the pattern size, and that many threads per block.
@@ -85,7 +84,7 @@ parallel_recall(double* network, int* pattern) {
 		//cudaDeviceSynchronize(); 
 
 		//copy updated pattern back from the device and free device memory
-		cudaMemcpy(pattern, device_pattern, sizeof(pattern), cudaMemcpyDeviceToHost);
+		cudaMemcpy(pattern, device_pattern, sizeof(int)*PATTERN_SIZE, cudaMemcpyDeviceToHost);
 		cudaFree(device_network);
 		cudaFree(device_pattern);
 
@@ -128,15 +127,15 @@ parallel_train_starter(double* network, int* image) {
 	//declaration and memory allocation
 	double* device_network;
 	int* device_image;
-	cudaMalloc((void **)&device_network, sizeof(network));
-	cudaMalloc((void **)&device_image, sizeof(transformed_image));
+	cudaMalloc((void **)&device_network, sizeof(double)*NETWORK_SIZE);
+	cudaMalloc((void **)&device_image, sizeof(int)*PATTERN_SIZE);
 
-	cudaMemcpy(device_network, network, sizeof(device_network), cudaMemcpyHostToDevice);
-	cudaMemcpy(device_image, image, sizeof(device_image), cudaMemcpyHostToDevice);
+	cudaMemcpy(device_network, network, sizeof(double)*NETWORK_SIZE, cudaMemcpyHostToDevice);
+	cudaMemcpy(device_image, image, sizeof(int)*PATTERN_SIZE, cudaMemcpyHostToDevice);
 
 	parallel_train_network<<<PATTERN_SIZE, PATTERN_SIZE>>>(device_network, device_image);
 
-	cudaMemcpy(network, device_network, sizeof(network), cudaMemcpyDeviceToHost);
+	cudaMemcpy(network, device_network, sizeof(double)*NETWORK_SIZE, cudaMemcpyDeviceToHost);
 
 	cudaFree(device_network);
 	cudaFree(device_image);
